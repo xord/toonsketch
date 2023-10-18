@@ -61,6 +61,10 @@ class Canvas < Sprite
     @images, @frame = [], 0
   end
 
+  def zoom=(zoom)
+    @zoom = zoom.clamp(1..)
+  end
+
   def play()
     return if playing?
     setInterval 0.2, id: :play do

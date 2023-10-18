@@ -23,12 +23,16 @@ class App
       Button.new(label: 'Load', rgb: [240, 240, 180]) { @canvas.load SAVE_PATH },
       Button.new(label: 'Save', rgb: [240, 240, 180]) { @canvas.save SAVE_PATH },
     ]
-    @tools = [1, 2, 3, 5, 10].map { |n|
+    @brushes = [1, 2, 3, 5, 10].map { |n|
       Button.new(label: "#{n}px", w: 44) {
         @canvas.brushSize = n
         updateSelections
       }
     }
+    @tools = [
+      Button.new(label: '-', w: 44) { @canvas.zoom -= 1 },
+      Button.new(label: '+', w: 44) { @canvas.zoom += 1 },
+    ]
     @colors = [0, 127, 191, 223, 255].map { |n|
       Button.new(w: 44, rgb: [n, n, n]) {
         @canvas.brushColor = [n, n, n]
@@ -36,7 +40,7 @@ class App
       }
     }
     @status  = createStatus
-    @sprites = [@canvas, *@actions, *@tools, *@colors, @status]
+    @sprites = [@canvas, *@actions, *@brushes, *@tools, *@colors, @status]
     @sprites.each { addSprite _1 }
 
     updateSelections
@@ -50,8 +54,8 @@ class App
   end
 
   def updateSelections()
-    @tools.each  { _1.select = _1.label == "#{@canvas.brushSize}px" }
-    @colors.each { _1.select = _1.rgb   == @canvas.brushColor }
+    @brushes.each { _1.select = _1.label == "#{@canvas.brushSize}px" }
+    @colors.each  { _1.select = _1.rgb   == @canvas.brushColor }
   end
 
   def draw()
@@ -63,10 +67,13 @@ class App
     @actions.first.pos = [MARGIN, MARGIN]
     @actions.each_cons(2) { _2.pos = [MARGIN, _1.bottom + MARGIN] }
 
-    @tools.first.pos = [@actions.first.right + MARGIN, MARGIN]
+    @brushes.first.pos = [@actions.first.right + MARGIN, MARGIN]
+    @brushes.each_cons(2) { _2.pos = [_1.right + MARGIN, _1.y] }
+
+    @tools.first.pos = [@brushes.last.right + MARGIN * 2, @brushes.last.top]
     @tools.each_cons(2) { _2.pos = [_1.right + MARGIN, _1.y] }
 
-    @colors.first.pos = [@actions.first.right + MARGIN, @tools.first.bottom + MARGIN]
+    @colors.first.pos = [@actions.first.right + MARGIN, @brushes.first.bottom + MARGIN]
     @colors.each_cons(2) { _2.pos = [_1.right + MARGIN, _1.y] }
 
     @status.pos    = [0, height - 22]
