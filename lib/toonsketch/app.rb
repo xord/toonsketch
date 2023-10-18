@@ -11,7 +11,7 @@ class App
     windowResize 800, 600
     noStroke
 
-    @canvas  = Canvas.new 160, 120, zoom: 3
+    @canvas  = Canvas.new(160, 120).tap {_1.zoom = 3}
     @actions = [
       Button.new(label: 'Play', rgb: [240, 180, 180]) { playOrStop _1 },
       Space.new(h: MARGIN * 2),
@@ -30,8 +30,18 @@ class App
       }
     }
     @tools = [
-      Button.new(label: '-', w: 44) { @canvas.zoom -= 1 },
-      Button.new(label: '+', w: 44) { @canvas.zoom += 1 },
+      Button.new(label: 'Move',   w: 66).tap { |sprite|
+        sprite.mouseDragged do
+          canvas.translation += createVector(_1.mouseX - _1.pmouseX, _1.mouseY - _1.pmouseY)
+        end
+      },
+      Button.new(label: 'Rotate', w: 66).tap { |sprite|
+        sprite.mouseDragged do
+          canvas.rotation += _1.mouseX - _1.pmouseX
+        end
+      },
+      Button.new(label: 'ZoomIn',  w: 66) { @canvas.zoom += 1 },
+      Button.new(label: 'ZoomOut', w: 66) { @canvas.zoom -= 1 },
     ]
     @colors = [0, 127, 191, 223, 255].map { |n|
       Button.new(w: 44, rgb: [n, n, n]) {

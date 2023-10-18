@@ -12,10 +12,11 @@ class Canvas < Sprite
     }
   END
 
-  def initialize(width, height, zoom: 1)
+  def initialize(width, height)
     super 0, 0, width, height
 
-    @width, @height, @zoom = width, height, zoom
+    @width, @height                = width, height
+    @translation, @zoom, @rotation = createVector(0, 0), 1, 0
 
     clear
     self.brushSize  = 1
@@ -27,19 +28,32 @@ class Canvas < Sprite
         rect 0, 0, self.w, self.h
       end
 
+      translate self.w / 2 + @translation.x, self.h / 2 + @translation.y
+      rotate radians @rotation
       scale @zoom, @zoom
+      translate -@width / 2, -@height / 2
+
       drawImage self.image, 0, 0, @width, @height
       tint 255, 10
       self.image(offset: -1)&.tap { drawImage _1, 0, 0, @width, @height }
       self.image(offset: +1)&.tap { drawImage _1, 0, 0, @width, @height }
     end
 
-    self.mousePressed  { brushStarted self.mouseX / @zoom, self.mouseY / @zoom }
-    self.mouseReleased { brushEnded   self.mouseX / @zoom, self.mouseY / @zoom }
-    self.mouseDragged  { brushMoved   self.mouseX / @zoom, self.mouseY / @zoom }
+    mousePos = -> {
+      Rays::Matrix.new(1)
+        .translate(@width / 2, @height / 2)
+        .scale(1.0 / @zoom, 1.0 / @zoom)
+        .rotate(-@rotation)
+        .translate(-self.w / 2 - @translation.x, -self.h / 2 - @translation.y)
+        .then {_1 * Rays::Point.new(self.mouseX, self.mouseY)}
+        .to_a(2)
+    }
+    self.mousePressed  { brushStarted *mousePos.call }
+    self.mouseReleased { brushEnded   *mousePos.call }
+    self.mouseDragged  { brushMoved   *mousePos.call }
   end
 
-  attr_accessor :brushSize, :brushColor
+  attr_accessor :translation, :rotation, :brushSize, :brushColor
 
   attr_reader :zoom, :frame, :playing, :brushSize, :brushColor
 
