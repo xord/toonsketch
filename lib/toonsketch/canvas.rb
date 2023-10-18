@@ -23,6 +23,8 @@ class Canvas < Sprite
     self.brushColor = [0, 0, 0]
 
     self.draw do
+      clip self.x, self.y, self.w, self.h
+
       push do
         shader CHECKER
         rect 0, 0, self.w, self.h
