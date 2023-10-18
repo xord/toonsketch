@@ -76,9 +76,8 @@ class App
     @colors.first.pos = [@actions.first.right + MARGIN, @brushes.first.bottom + MARGIN]
     @colors.each_cons(2) { _2.pos = [_1.right + MARGIN, _1.y] }
 
-    @status.pos    = [0, height - 22]
-    @status.right  = width
-    @status.bottom = height
+    @status.pos   = [0, height - @status.h]
+    @status.width = width
 
     @canvas.pos    = [@actions.first.right + MARGIN, @colors.first.bottom + MARGIN]
     @canvas.right  = width - MARGIN
@@ -96,14 +95,23 @@ class App
   private
 
   def createStatus()
-    Sprite.new.tap do |sp|
+    Sprite.new(0, 0, 1, 28).tap do |sp|
+      left = -> {
+        "[ #{canvas.frame + 1} / #{canvas.size} ]"
+      }
+      right = -> {
+        "( #{canvas.zoom * 100}% )"
+      }
       sp.draw do
         fill 200
         rect 0, 0, sp.w, sp.y
 
         fill 0
+        textSize 16
         textAlign LEFT, CENTER
-        text "[ #{canvas.frame + 1} / #{canvas.size} ]", MARGIN, 0, sp.w, sp.h
+        text left.call,  MARGIN * 2, 0, sp.w - MARGIN, sp.h
+        textAlign RIGHT, CENTER
+        text right.call, MARGIN, 0, sp.w - MARGIN * 2, sp.h
       end
     end
   end
