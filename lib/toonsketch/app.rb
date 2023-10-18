@@ -7,7 +7,7 @@ class App
   SAVE_PATH = 'ToonData'
 
   def initialize()
-    setTitle 'Toon!'
+    setTitle 'ToonSketch'
     windowResize 800, 600
     noStroke
 
