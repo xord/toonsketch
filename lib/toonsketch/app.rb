@@ -40,8 +40,11 @@ class App
           canvas.rotation += _1.mouseX - _1.pmouseX
         end
       },
-      Button.new(label: 'ZoomIn',  w: 66) { @canvas.zoom += 1 },
-      Button.new(label: 'ZoomOut', w: 66) { @canvas.zoom -= 1 },
+      Button.new(label: 'Zoom',  w: 66).tap { |sprite|
+        sprite.mouseDragged do
+          @canvas.zoom += (_1.mouseX - _1.pmouseX) / 32.0
+        end
+      },
     ]
     @colors = [0, 127, 191, 223, 255].map { |n|
       Button.new(w: 44, rgb: [n, n, n]) {
@@ -110,7 +113,7 @@ class App
         "[ #{canvas.frame + 1} / #{canvas.size} ]"
       }
       right = -> {
-        "( #{canvas.zoom * 100}% )"
+        "( #{(canvas.zoom * 100).to_i}% )"
       }
       sp.draw do
         fill 200
