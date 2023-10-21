@@ -58,6 +58,7 @@ class App
     when 's' then _clickBrushColor *BRUSH_COLORS[1]
     when 'd' then _clickBrushColor *BRUSH_COLORS[2]
     when 'f' then _clickBrushColor *BRUSH_COLORS[3]
+    when 'g' then _clickBrushColor *BRUSH_COLORS[4]
     when '1' then _clickLayer 0
     when '2' then _clickLayer 1
     when '3' then _clickLayer 2
@@ -75,7 +76,7 @@ class App
 
   BRUSH_SIZES  = [1, 2, 3, 5, 10]
 
-  BRUSH_COLORS = [0, 127, 191, 255].map { [_1] * 3 }
+  BRUSH_COLORS = [0, 127, 191, 223, 255].map { [_1] * 3 }
 
   def _setup()
     @canvas = Canvas.new(160, 120).tap {_1.zoom = 3}
