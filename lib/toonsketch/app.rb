@@ -82,7 +82,7 @@ class App
     @canvas = Canvas.new(160, 120).tap {_1.zoom = 3}
 
     @playOrStop =
-      Button.new(label: 'Play', rgb: [240, 180, 180]) { _clickPlayOrStop }
+      Button.new(label: 'Play', h: 66, rgb: [240, 180, 180]) { _clickPlayOrStop }
 
     @actions = [
       @playOrStop,
