@@ -1,35 +1,37 @@
 class History
 
   def initialize()
-    @actions = []
+    @undos, @redos = [], []
   end
 
   def undo()
-    @actions.pop.undo
+    return if @undos.empty?
+    @undos.last.undo
+    @redos.push @undos.pop
   end
 
   def redo()
-    raise NotImplementedError
+    @return if @redos.empty?
+    @redos.last.do
+    @undos.push @redos.pop
   end
 
   def canUndo?()
-    @actions.size > 0
+    @undos.size > 0
   end
 
   def canRedo?()
-    false
+    @redos.size > 0
   end
 
   def add(action)
-    @actions << action
+    @undos << action
+    @redos.clear
   end
 
   def clear()
-    @actions.clear
-  end
-
-  def size()
-    @actions.size
+    @undos.clear
+    @redos.clear
   end
 
 end# History
