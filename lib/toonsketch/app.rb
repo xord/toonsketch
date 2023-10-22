@@ -10,10 +10,18 @@ class App
     setTitle 'ToonSketch'
     windowResize 800, 600
     noStroke
+
+    @history = History.new
+
     _setup
   end
 
+  attr_reader :history
+
   def draw()
+    @undo.enable @history.canUndo?
+    @redo.enable @history.canRedo?
+
     background 100
     sprite *@sprites
   end
@@ -79,10 +87,13 @@ class App
   BRUSH_COLORS = [0, 127, 191, 223, 255].map { [_1] * 3 }
 
   def _setup()
-    @canvas = Canvas.new(160, 120).tap {_1.zoom = 3}
+    @canvas = Canvas.new(self, 160, 120).tap {_1.zoom = 3}
 
     @playOrStop =
       Button.new(label: 'Play', h: 66, rgb: [240, 180, 180]) { _clickPlayOrStop }
+
+    @undo = Button.new(label: 'Undo') { _clickUndo }
+    @redo = Button.new(label: 'Redo') { _clickRedo }
 
     @actions = [
       @playOrStop,
@@ -92,6 +103,9 @@ class App
       Button.new(label: 'Insert Next', h: 66, rgb: [180, 240, 180]) { _clickInsertNext },
       Button.new(label: 'Insert',             rgb: [180, 240, 180]) { _clickInsert },
       Button.new(label: 'Delete',             rgb: [180, 240, 180]) { _clickDelete },
+      Space.new(h: MARGIN * 2),
+      @undo,
+      @redo,
       Space.new(h: MARGIN * 2),
       Button.new(label: 'New',  rgb: [240, 240, 180]) { _clickNew },
       Button.new(label: 'Load', rgb: [240, 240, 180]) { _clickLoad },
@@ -176,6 +190,14 @@ class App
     @canvas.stop
     @canvas.delete
     @canvas.frame = @canvas.frame - 1 if @canvas.frame == @canvas.size
+  end
+
+  def _clickUndo()
+    @history.undo
+  end
+
+  def _clickRedo()
+    @history.redo
   end
 
   def _clickNew()

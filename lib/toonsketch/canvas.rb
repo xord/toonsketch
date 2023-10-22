@@ -1,12 +1,14 @@
 using RubySketch
 
+
 class Canvas < Sprite
 
   include Enumerable
 
-  def initialize(width, height)
+  def initialize(owner, width, height)
     super 0, 0, width, height
 
+    @owner                 = owner
     @anim, @frame, @layer  = Animation.new(width, height), 0, 0
     @scroll, @zoom, @angle = createVector(0, 0), 1, 0
 
@@ -14,9 +16,9 @@ class Canvas < Sprite
     self.brushColor = [0, 0, 0]
 
     draw          { _draw }
-    mousePressed  { brushStarted *_mousePos }
-    mouseReleased { brushEnded   *_mousePos }
-    mouseDragged  { brushMoved   *_mousePos }
+    mousePressed  { _mousePressed }
+    mouseReleased { _mouseReleased }
+    mouseDragged  { _mouseDragged }
   end
 
   attr_accessor :scroll, :angle, :brushSize, :brushColor
@@ -45,8 +47,9 @@ class Canvas < Sprite
     @anim.delete @frame
   end
 
-  def clear(anim = Animation.new(@anim.width, @anim.height))
-    @anim, @frame, @layer = anim, 0, 0
+  def clear()
+    @anim          = Animation.new @anim.width, @anim.height
+    @frame, @layer = 0, 0
   end
 
   def each(&block)
@@ -68,39 +71,6 @@ class Canvas < Sprite
 
   def playing?() = @playing
 
-  def drawPoint(x, y)
-    _beginDraw do |g|
-      g.noFill
-      g.strokeWeight @brushSize
-      g.stroke *@brushColor
-      g.point x, y
-    end
-  end
-
-  def drawLine(x1, y1, x2, y2)
-    _beginDraw do |g|
-      g.noFill
-      g.strokeWeight @brushSize
-      g.stroke *@brushColor
-      g.line x1, y1, x2, y2
-    end
-  end
-
-  def brushStarted(x, y)
-    drawPoint x, y
-    @prevPoint = [x, y]
-  end
-
-  def brushEnded(x, y)
-    @prevPoint = nil
-  end
-
-  def brushMoved(x, y)
-    return unless @prevPoint
-    drawLine *@prevPoint, x, y
-    @prevPoint = [x, y]
-  end
-
   def save(dir)
     @anim.save dir
   end
@@ -121,18 +91,6 @@ class Canvas < Sprite
     }
   END
 
-  def _getFrame(offset: 0, create: true)
-    frame = @frame + offset
-    return nil if frame < 0 || (!create && size <= frame)
-    @anim[frame]
-  end
-
-  def _beginDraw(&block)
-    _getFrame[@layer].beginDraw do |graphics|
-      block.call graphics
-    end
-  end
-
   def _draw()
     aw, ah = @anim.width, @anim.height
 
@@ -152,6 +110,27 @@ class Canvas < Sprite
     tint 255, 20
     _getFrame(offset: -1, create: false)&.tap { drawImage _1.image, 0, 0, aw, ah }
     _getFrame(offset: +1, create: false)&.tap { drawImage _1.image, 0, 0, aw, ah }
+  end
+
+  def _mousePressed()
+    @brush = Brush.new _getFrame[@layer], brushSize, brushColor
+    @brush.brushStarted *_mousePos
+    @owner.history.add @brush
+  end
+
+  def _mouseReleased()
+    @brush&.brushEnded *_mousePos
+    @brush = nil
+  end
+
+  def _mouseDragged()
+    @brush&.brushMoved *_mousePos
+  end
+
+  def _getFrame(offset: 0, create: true)
+    frame = @frame + offset
+    return nil if frame < 0 || (!create && size <= frame)
+    @anim[frame]
   end
 
   def _mousePos()

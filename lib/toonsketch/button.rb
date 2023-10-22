@@ -6,15 +6,27 @@ class Button < Sprite
     super 0, 0, w, h
 
     @label, @rgb, @block = label, rgb, block
-    @selected, @pressing = false, false
+    @enabled, @selected, @pressing = true, false, false
 
-    draw          { onDraw }
-    mousePressed  { onMousePressed }
-    mouseReleased { onMouseReleased }
-    mouseDragged  { onMouseDragged }
+    draw          { _draw }
+    mousePressed  { _mousePressed }
+    mouseReleased { _mouseReleased }
+    mouseDragged  { _mouseDragged }
   end
 
   attr_accessor :label, :rgb
+
+  def enable(enabled = true)
+    @enabled = enabled
+  end
+
+  def disable()
+    enable false
+  end
+
+  def enabled?()  =  @enabled
+
+  def disabled?() = !@enabled
 
   def selected?() = @selected
 
@@ -24,9 +36,11 @@ class Button < Sprite
 
   private
 
-  def onDraw()
+  def _draw()
     round, offset = 12, 8
-    w, h, y       = self.w, self.h - offset, @pressing ? 6 : 0
+
+    w, h = self.w, self.h - offset
+    y    = enabled? && @pressing ? 6 : 0
 
     if @rgb
       fill *@rgb.map { _1 - 20 }
@@ -36,7 +50,7 @@ class Button < Sprite
       rect 0, y, w, h, round
     end
 
-    if @selected
+    if selected? && enabled?
       strokeWeight 3
       stroke *(@rgb == [255, 255, 255] ? [0, 0, 0] : [255, 255, 255])
       noFill
@@ -45,25 +59,26 @@ class Button < Sprite
 
     if @label
       textAlign CENTER, CENTER
-      fill 0
+      fill enabled? ? 0 : 127
       text @label, 0, y, w, h
     end
   end
 
-  def onMousePressed()
+  def _mousePressed()
+    return if disabled?
     @pressing = true
   end
 
-  def onMouseReleased()
-    @block.call self if @block && isMouseInside?
+  def _mouseReleased()
+    @block.call self if @block && enabled? && _isMouseInside?
     @pressing = false
   end
 
-  def onMouseDragged()
-    @pressing = isMouseInside?
+  def _mouseDragged()
+    @pressing = _isMouseInside?
   end
 
-  def isMouseInside?() =
+  def _isMouseInside?() =
     (0...w).include?(mouseX) && (0..h).include?(mouseY)
 
 end # Button

@@ -165,6 +165,11 @@ class Layer
     @image ||= createGraphics @width, @height
   end
 
+  def clear()
+    @image = nil
+    self
+  end
+
   def beginDraw(&block)
     image.beginDraw do |graphics|
       block.call graphics
